@@ -1,0 +1,39 @@
+with _pr_line_cte as (
+
+Select [Город]
+    ,[Позиция]
+    ,[Счет] as Счет
+    ,[Прайс] as Прайс
+    ,[Другое] as Другое
+FROM 
+	(Select [Город], [Позиция], [Источник], [Цена] FROM 
+	(
+	Select [Город]
+		,[Позиция]
+		, [Конкурент]
+		,[Источник]
+	,AVG([Цена])/{{nds_rate}} as Цена -- считаем, что все цены включают НДС
+	FROM Prices.dbo.ЦеныКонкурентовГорячаяЛиния_v2
+	Where [Дата] Between {{emi_price_hotline.per_start}} and {{emi_price_hotline.per_end}}
+	and [Источник] IN ('Счет', 'Прайс', 'Другое')
+	and [Конкурент] in {{emi_price_hotline.comp_list | inclause}}
+	and [Дивизион] =  {{div}}
+	and [Позиция] IN  ( SELECT DISTINCT 
+	 [Наименование]
+  FROM [PRD_ERP_PBI].[dbo].[ГрупповаяНоменклатура]
+  WHERE [ГруппаФинансовогоУчета] = {{gfu}}
+  )
+	GROUP BY [Город]
+			,[Позиция]
+			, [Конкурент]
+			,[Источник]
+	) as a
+
+) as source
+PIVOT (
+    AVG([Цена])
+    FOR [Источник] IN ([Счет], [Прайс], [Другое])
+) as pvt
+Where COALESCE(Счет, Прайс, Другое,0) >0 and [Позиция] is not Null and [Город] is Not Null
+
+)

@@ -1,0 +1,24 @@
+, zakup_prices as (
+SELECT 
+      CAST([Период] as date) as Период
+	  ,v_p.Подразделение as Город
+      ,[ГрупповаяНоменклатура] as Позиция
+      ,v_p.Вид_цены_закупка
+      ,AVG(CASE WHEN v_p.ЦенаВключаетНДС =1 Then COALESCE([Цена] / NULLIF({{nds_rate}},0),0) Else [Цена] End) as Средняя_цена_вход
+      ,MIN(CASE WHEN v_p.ЦенаВключаетНДС =1 Then COALESCE([Цена] / NULLIF({{nds_rate}},0),0) Else [Цена] End) as Индикатив	  
+  FROM [PRD_ERP_PBI].[dbo].[ЦеныНоменклатурыПоставщиков] as p
+  INNER JOIN(    Select *, 
+                CASE WHEN [ВидЦеныПоставщика] not Like 'Выкуп%' Then 'Цена_закупа' Else 'Цена_поручения' End as Вид_цены_закупка 
+                from [PRD_ERP_PBI].[dbo].[ВидыЦенПоставщика]   
+                Where [Подразделение] IN ( SELECT DISTINCT [Подразделение] FROM [Avtozakaz].[dbo].[_SQL_СтруктураПредприятия] Where [Дивизион] Like  {{ '%' ~ div ~ '%' }} ) 
+                      and [Поставщик] IN {{p_zakup.partners | inclause}}
+             
+              )                                        as v_p on p.ВидЦеныПоставщика = v_p.ВидЦеныПоставщика and p.Партнер = v_p.Поставщик
+  Where DATEFROMPARTS(YEAR([Период]), MONTH([Период]),1 ) IN {{p_zakup.per_dates | inclause}} and [ГруппаФинансовогоУчета] = {{gfu}} and [ГрупповаяНоменклатура] is not Null and [v_p].Подразделение is not Null
+  GROUP BY     
+      CAST([Период] as date)
+	  ,v_p.Подразделение
+      ,[ГрупповаяНоменклатура] 
+      ,v_p.Вид_цены_закупка
+	  
+)

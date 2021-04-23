@@ -1,0 +1,55 @@
+Select COALESCE(stock_sales_seb.Город, parsing.Город, p1.Город, p2.Город, p3.Город, p4.Город, _pr_line_cte.Город) as Город
+,COALESCE(stock_sales_seb.Позиция, parsing.Позиция, p1.Позиция, p2.Позиция, p3.Позиция, p4.Позиция,  _pr_line_cte.Позиция) as Позиция 
+--,ABCXYZ 
+,SUM(План_продаж) as План_продаж
+,SUM(Прогноз_продаж) as Прогноз_продаж
+,SUM(Текущий_остаток_путь) as Текущий_остаток_путь
+,AVG(Себестоимость_запаса) as Себестоимость_запаса
+,AVG(_pr_line_cte.Счет) as Счет
+,AVG(_pr_line_cte.Прайс) as Прайс 
+,AVG(_pr_line_cte.Другое) as Другое
+,AVG(parsing.Средняя_цена_парсинг) as Средняя_цена_парсинг
+,AVG(p1.Средняя_цена_вход) as Цена_входа_тек_месяц
+,AVG(p2.Средняя_цена_вход) as Цена_входа_след_месяц
+,AVG(p3.Средняя_цена_вход) as Цена_поручения
+,AVG(p4.Прайс_ЕМИ) as Прайс_ЕМИ
+
+
+FROM stock_sales_seb
+FULL OUTER JOIN parsing on stock_sales_seb.Город = parsing.Город and stock_sales_seb.Позиция = parsing.Позиция
+FULL OUTER JOIN _pr_line_cte on stock_sales_seb.Город = _pr_line_cte.Город and stock_sales_seb.Позиция = _pr_line_cte.Позиция
+FULL OUTER JOIN (
+    Select [Город], [Позиция], [Средняя_цена_вход]
+    FROM zakup_prices
+    Where [Период] = (SELECT MIN(Период) FROM zakup_prices) and [Вид_цены_закупка] = 'Цена_закупа'
+
+
+
+            )            as p1 on stock_sales_seb.Город = p1.Город and stock_sales_seb.Позиция = p1.Позиция
+            
+FULL OUTER JOIN (
+    Select [Город], [Позиция], [Средняя_цена_вход]
+    FROM zakup_prices
+    Where [Период] = (SELECT MAX(Период) FROM zakup_prices) and [Вид_цены_закупка] = 'Цена_закупа'
+
+
+
+            )            as p2 on stock_sales_seb.Город = p2.Город and stock_sales_seb.Позиция = p2.Позиция
+
+FULL OUTER JOIN (
+    Select [Город], [Позиция], [Средняя_цена_вход]
+    FROM zakup_prices
+    Where [Период] = (SELECT MIN(Период) FROM zakup_prices) and [Вид_цены_закупка] = 'Цена_поручения'
+
+
+
+            )            as p3 on stock_sales_seb.Город = p3.Город and stock_sales_seb.Позиция = p3.Позиция
+
+FULL OUTER JOIN (
+    Select [Город], [Позиция], [Прайс_ЕМИ]
+    FROM emi_last_price
+            )           as p4 on stock_sales_seb.Город = p4.Город and stock_sales_seb.Позиция = p4.Позиция
+
+
+GROUP BY COALESCE(stock_sales_seb.Город, parsing.Город, p1.Город, p2.Город, p3.Город, p4.Город, _pr_line_cte.Город)
+,COALESCE(stock_sales_seb.Позиция, parsing.Позиция, p1.Позиция, p2.Позиция, p3.Позиция, p4.Позиция, _pr_line_cte.Позиция)
