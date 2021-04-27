@@ -3,15 +3,13 @@ from typing import Dict
 
 from fastapi import FastAPI
 from starlette.responses import RedirectResponse
-from pydantic import BaseModel
-
+from model.requests_models import PriceCalcParams
 from model.price_calc import PriceCalc
 from model.data_layer import read_sql_queries
 from model.data_layer import get_sql_connection
 from jinjasql import JinjaSql
 
 import uvicorn
-import datetime as dt
 
 app = FastAPI()
 queries = ["queries/hotline",
@@ -20,31 +18,6 @@ queries = ["queries/hotline",
             "queries/zakup_prices",
             "queries/emi_last_price",
             "queries/summary"]
-
-
-class ParsingParams(BaseModel):
-    per_start: dt.date
-    per_end: dt.date
-    comp_list: List[str]
-
-
-class EmiHotlineParams(BaseModel):
-    per_start: dt.date
-    per_end: dt.date
-    comp_list: List[str]
-
-
-class PricesZakupParams(BaseModel):
-    partners: List[str]
-    per_dates: List[dt.date]
-
-
-class PriceCalcParams(BaseModel):
-    div: str
-    gfu: str
-    emi_price_hotline: EmiHotlineParams
-    parsing: ParsingParams
-    p_zakup: PricesZakupParams
 
 
 @app.get("/")
@@ -66,6 +39,11 @@ def calculate_price(c_params: PriceCalcParams):
     calc_obj.set_sql_response(sql_res)
     calc_obj.calculate_prices()
     return calc_obj.get_calc_price()
+
+@app.post("/test/echo")
+def echo_json(req):
+    return req.json
+
 
 
 if __name__ == "__main__":
