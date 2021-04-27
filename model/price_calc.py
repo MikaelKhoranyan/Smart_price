@@ -1,5 +1,6 @@
 import sqlalchemy
 import pandas as pd
+import decimal
 
 from typing import List
 
@@ -38,6 +39,30 @@ class PriceCalc(object):
         )/df.groupby('Город')['Текущий_остаток_путь'].sum()  # коэффициент_запаса
         self.podr_perf = pd.DataFrame(dict(vip1=plan_vip > 0.98, kz1=kz > 0.5, kz2=kz > 1))
 
+    def _apply_priplata(self, feature_name, price):
+        """ Применяет приплату к расчетному показателю.
+            Значение приплаты может быть как в %, так и в рублях,
+            принимаем, что если приплата меньше 100, то это процент
+        """
+        feature_map = {'Счет': 'dop_rinok',
+                    'Прайс': 'dop_rinok',
+                    'Другое': 'dop_rinok',
+                    'Средняя_цена_парсинг': 'dop_parsing',
+                    'Цена_входа_тек_месяц': 'dop_vxod_1',
+                    'Цена_входа_след_месяц': 'dop_vxod_2',
+                    'Цена_поручения': 'dop_poruchenie',
+                    'Себестоимость_запаса': 'dop_sebest',
+                    'МРЦ':'dop_mrc',
+                    'Установки': 'dop_ustanovki',                    
+                    }
+
+        feature_req_name = feature_map[feature_name]
+        dop_priplata = float(self.request_params['priplati'][feature_req_name])
+        if not(dop_priplata > 0) or dop_priplata > 100:
+            return float(price) + dop_priplata
+        else:
+            return float(price)*dop_priplata
+         
     def calculate_row_price(self, row) -> dict:
         """
         Пока предполагаем, что КЗ и Выполнение считаем по подразеделения, а не по позициям.
@@ -55,9 +80,8 @@ class PriceCalc(object):
             [row.get('Прогноз_продаж'), row.get('План_продаж')]) else False
 
         ustanovka = False
-
-        # сразу считаем мин и макс по факторам
-        price_factors = [row.get(feature_name) for feature_name in self.price_factors if row.get(
+        # формируем массив факторов с учетом приплат
+        price_factors = [self._apply_priplata(feature_name, row.get(feature_name)) for feature_name in self.price_factors if row.get(
             feature_name) is not None]
         min_factors = float(min(price_factors))
         max_factors = float(max(price_factors))
@@ -73,16 +97,22 @@ class PriceCalc(object):
         if not kz1:
             # второй сценарий, нет запаса совсем, берем максимальную цену среди факторов
             calc_res['pr_case'] = 2
-            # + priplata_2 тут еще должна быть приплата
-            calc_res['c_price'] = max_factors
-
+            priplata = float(self.request_params['priplati']['kz_priplata_2'])
+            if not(priplata > 0) or priplata > 100:
+                calc_res['c_price'] = max_factors  + priplata
+            else:
+                calc_res['c_price'] = max_factors * priplata
+        
         # if kz1 and market:
         #     pr_case = 5
 
         if kz1 and vip:
             calc_res['pr_case'] = 4
-            # + priplata_1 тут еще должна быть приплата
-            calc_res['c_price'] = max_factors
+            priplata = float(self.request_params['priplati']['kz_priplata_1'])
+            if not(priplata > 0) or priplata > 100:
+                calc_res['c_price'] = max_factors  + priplata
+            else:
+                calc_res['c_price'] = max_factors * priplata
 
         if kz2 and vip:
             calc_res['pr_case'] = 7
