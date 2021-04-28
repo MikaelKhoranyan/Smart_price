@@ -8,7 +8,7 @@ from typing import List
 class PriceCalc(object):
     def __init__(self, req_params):
         self.request_params = req_params
-        self.price_factors = ['Счет', 'Прайс', 'Другое', 'Средняя_цена_парсинг', 'Цена_входа_тек_месяц', 'Цена_входа_след_месяц', 'Цена_поручения', 'Себестоимость_запаса']
+        self.price_factors = ['Счет', 'Прайс', 'Другое', 'Средняя_цена_парсинг', 'Цена_входа_тек_месяц', 'Цена_входа_след_месяц', 'Цена_поручения', 'Себестоимость_запаса', 'Прайс_ЕМИ']
 
     def set_sql_response(self, sql_res):
         # фильтруем строки, по котрым нет хотя бы одной цены
@@ -56,28 +56,31 @@ class PriceCalc(object):
                     'Установки': 'dop_ustanovki',                    
                     }
 
-        feature_req_name = feature_map[feature_name]
-        dop_priplata = float(self.request_params['priplati'][feature_req_name])
-        if not(dop_priplata > 0) or dop_priplata > 100:
-            return float(price) + dop_priplata
+        feature_req_name = feature_map.get(feature_name)
+        if feature_req_name:
+            dop_priplata = float(self.request_params['priplati'][feature_req_name])
+            if not(dop_priplata > 0) or dop_priplata > 100:
+                return float(price) + dop_priplata
+            else:
+                return float(price)*dop_priplata
         else:
-            return float(price)*dop_priplata
+            return float(price)
          
     def calculate_row_price(self, row) -> dict:
         """
-        Пока предполагаем, что КЗ и Выполнение считаем по подразеделения, а не по позициям.
+        Пока предполагаем, что выполнение считаем по подразеделениям, а кз по позициям.
         """
-        # podr_perf = self.podr_perf.iloc[row['Город']]
+        podr_perf = self.podr_perf.loc[row['Город']]
+        vip = bool(podr_perf['vip1'])
         # kz1 = podr_perf['kz1']
         # kz2 = podr_perf['kz2']
-        # vip = podr_perf['vip1']
 
         kz1 = (row.get('Текущий_остаток_путь')/row.get('Прогноз_продаж')) >= 0.5 if all(
             [row.get('Текущий_остаток_путь'), row.get('Прогноз_продаж')]) else False
         kz2 = (row.get('Текущий_остаток_путь')/row.get('Прогноз_продаж')) >= 1 if all(
             [row.get('Текущий_остаток_путь'), row.get('Прогноз_продаж')]) else False
-        vip = (row.get('Прогноз_продаж')/row.get('План_продаж')) > 0.98 if all(
-            [row.get('Прогноз_продаж'), row.get('План_продаж')]) else False
+        # vip = (row.get('Прогноз_продаж')/row.get('План_продаж')) > 0.98 if all(
+        #     [row.get('Прогноз_продаж'), row.get('План_продаж')]) else False
 
         ustanovka = False
         # формируем массив факторов с учетом приплат

@@ -10,6 +10,7 @@ from model.data_layer import get_sql_connection
 from jinjasql import JinjaSql
 
 import uvicorn
+import datetime as dt
 
 app = FastAPI()
 queries = ["queries/hotline",
@@ -28,6 +29,8 @@ def read_root():
 
 @app.post("/test/pricelist", response_model=List[Dict])
 def calculate_price(c_params: PriceCalcParams):
+    req_start_time = dt.datetime.now()
+    print(f'Request recieved {req_start_time}')
     query_text = read_sql_queries(queries)
     j = JinjaSql()
     params = c_params.dict()
@@ -35,9 +38,18 @@ def calculate_price(c_params: PriceCalcParams):
     query, bind_params = j.prepare_query(query_text, params)
     engine = get_sql_connection()
     sql_res = engine.execute(query, bind_params).fetchall()
+    engine.dispose()
+    sql_end_time = dt.datetime.now()
+    print(f'SQL result recieved {sql_end_time}')
+    print(f'SQL wait time {sql_end_time-req_start_time}')
     calc_obj = PriceCalc(req_params=params)
     calc_obj.set_sql_response(sql_res)
+    calc_obj.set_podr_params()
     calc_obj.calculate_prices()
+    calc_end_time = dt.datetime.now()
+    print(f'Calculation ended {calc_end_time}')
+    print(f'Calculation time {calc_end_time-sql_end_time}')
+    print(f'Total time {calc_end_time-req_start_time}')
     return calc_obj.get_calc_price()
 
 @app.post("/test/echo")
