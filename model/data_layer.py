@@ -1,11 +1,12 @@
 import json
+import urllib
 from typing import List
 
 import sqlalchemy
 from sqlalchemy import create_engine
 
 
-def get_sql_connection(db_name:str='Prices') -> sqlalchemy.engine.Engine:
+def get_sql_connection(db_name: str= 'Prices', driver: str= 'pymssql') -> sqlalchemy.engine.Engine:
     """
     Возвращает engine-соедниение с базой данных
 
@@ -14,8 +15,13 @@ def get_sql_connection(db_name:str='Prices') -> sqlalchemy.engine.Engine:
     """
     with open("model/conf.json", 'rb') as f:
         conf = json.load(f)['sql_server']
-    mssql_connection_url = f"mssql+pymssql://{conf['user']}:{conf['password']}@{conf['server_adress']}/{db_name}"
-    return create_engine(mssql_connection_url)
+
+    if driver != 'pymssql':
+        db_url_part = urllib.parse.quote_plus(";".join([f"DRIVER={conf['odbc_ver']}", "SERVER="+conf['server_adress'], "DATABASE=Prices", "UID=" +conf['user'], "PWD=" + conf['password']]))
+        connection_url = f"mssql+pyodbc:///?odbc_connect={db_url_part}"
+    else:
+        connection_url = f"mssql+pymssql://{conf['user']}:{conf['password']}@{conf['server_adress']}/{db_name}"
+    return create_engine(connection_url)
 
 
 def read_sql_queries(query_path_list:List[str]) -> str:
