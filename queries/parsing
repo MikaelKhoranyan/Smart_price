@@ -14,7 +14,7 @@ FROM (
 			   , CAST(AVG(Цена) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[Северсталь]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , ЕИ
@@ -33,7 +33,7 @@ FROM (
 				 LEFT JOIN Prices.Парсинг.с_КонкурентыДетально ON с_КонкурентыДетально.FK_КодНазваниеКонк = [23met].КодКонкурента
 				 LEFT JOIN Парсинг.с_СкладыКонкурентов							 AS war		  ON war.КодСклада = [23met].КодСклада
 				 LEFT JOIN Парсинг.с_Регионы_конкурентов						 AS reg		  ON reg.Название = war.НазваниеСклада
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [23met].[КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [23met].[КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , [23met].КодСклада
 			   , [НазваниеДоп]
@@ -53,7 +53,7 @@ FROM (
 			   , CAST(AVG(COALESCE(Цена_от_4_до_6_тн, Цена_от_2_до_4_тн, Цена_от_1_до_2_тн, NULL)) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[MKC54]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
   			   , КодСклада
 			   , Источник
@@ -75,7 +75,7 @@ FROM (
 			   , CAST(AVG(Цена) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[Агрупп]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , ЕИ
@@ -95,7 +95,7 @@ FROM (
 			   , CAST(AVG(Цена) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[Демидов]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , Источник
@@ -114,7 +114,7 @@ FROM (
 			   , CAST(AVG(COALESCE(Цена_от_15_т, Цена_5_15_т, Цена_1_5_т, NULL)) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[Металлоторг]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , ЕИ
@@ -135,7 +135,7 @@ FROM (
 			   , CAST(AVG(COALESCE(Цена_2, Цена_1)) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[Металлсервис]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , ЕИ
@@ -156,7 +156,7 @@ FROM (
   			   , CAST(AVG(Цена) AS INT) AS Средняя_цена
   			   , Источник
 			FROM [Prices].[Парсинг].[НЛМК_Шоп]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , ЕИ
@@ -182,7 +182,7 @@ FROM (
 			   , CAST(AVG(Цена) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[СПК]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , Источник
@@ -202,7 +202,7 @@ FROM (
 			   , CAST(AVG(Оптовая_цена) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[Мечел]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , ЕИ
@@ -222,7 +222,7 @@ FROM (
 			   , CAST(AVG(COALESCE(Цена_от_3_тн, Цена_от_1_до_3_тн, Цена_до_1_тн, NULL)) AS INT) AS Средняя_цена
 			   , Источник
 			FROM [Prices].[Парсинг].[Металлкомплект]
-		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Дивизион] = {{div}})
+		   WHERE Дата BETWEEN {{parsing.per_start}} and {{parsing.per_end}} and [КодСклада] IN (SELECT [КодСклада] FROM [Prices].[Парсинг].[п_СкладКонкурентаФилиалЕМИ] WHERE [Подразделение_ЕМИ] = {{podr}})
 		GROUP BY КодНоменклатуры
 			   , КодСклада
 			   , Источник

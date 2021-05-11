@@ -17,7 +17,7 @@ FROM
 	Where [Дата] Between {{emi_price_hotline.per_start}} and {{emi_price_hotline.per_end}}
 	and [Источник] IN ('Счет', 'Прайс', 'Другое')
 	and [Конкурент] in {{emi_price_hotline.comp_list | inclause}}
-	and [Дивизион] =  {{div}}
+	and [Город] =  {{podr}}
 	and [Позиция] IN  ( SELECT DISTINCT 
 	 [Наименование]
   FROM [PRD_ERP_PBI].[dbo].[ГрупповаяНоменклатура]
@@ -34,6 +34,5 @@ PIVOT (
     AVG([Цена])
     FOR [Источник] IN ([Счет], [Прайс], [Другое])
 ) as pvt
-Where COALESCE(Счет, Прайс, Другое,0) >0 and [Позиция] is not Null and [Город] is Not Null
-
+Where COALESCE(Счет, Прайс, Другое,0) >0 and [Позиция] is not Null
 )

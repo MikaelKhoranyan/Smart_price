@@ -36,7 +36,7 @@ class DopAddition(BaseModel):
 
 
 class PriceCalcParams(BaseModel):
-    div: str
+    podr: str
     gfu: str
     emi_price_hotline: EmiHotlineParams
     parsing: ParsingParams
