@@ -26,7 +26,7 @@ LEFT JOIN (
         ,SUM([СтоимостьБезНДС]) as Стоимость
         ,COALESCE(SUM([СтоимостьБезНДС])/NULLIF(SUM([Количество]), 0), 0) as Себестоимость_запаса
     FROM [Avtozakaz].[dbo].[ВходСтруктураЗапасов] as zap
-    LEFT JOIN (SELECT DISTINCT Наименование, ГрупповаяНоменклатура FROM PRD_ERP_PBI.[dbo].[Номенклатура]) as nom on nom.Наименование = zap.Номенклатура
+    LEFT JOIN (SELECT DISTINCT Наименование, ГрупповаяНоменклатура FROM [SmartPrice].[dbo].[Номенклатура]) as nom on nom.Наименование = zap.Номенклатура
     LEFT JOIN [Avtozakaz].[dbo].[_SQL_СтруктураПредприятия] as s on zap.Склад = s.Склад  
     Where CAST([dt_processed] as date) = (Select MAX(CAST(ДатыВыгрузки as date)) FROM [Avtozakaz].[dbo].[ПланЗакупа_ДанныеДляФормыСнабжения]) and [ГФУ] = {{gfu}} and [Ед_изм] = 'т' and s.Подразделение = {{podr}}
   GROUP BY nom.ГрупповаяНоменклатура, s.[Подразделение]

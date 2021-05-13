@@ -20,7 +20,7 @@ FROM
 	and [Город] =  {{podr}}
 	and [Позиция] IN  ( SELECT DISTINCT 
 	 [Наименование]
-  FROM [PRD_ERP_PBI].[dbo].[ГрупповаяНоменклатура]
+  FROM [SmartPrice].[dbo].[ГрупповаяНоменклатура]
   WHERE [ГруппаФинансовогоУчета] = {{gfu}}
   )
 	GROUP BY [Город]

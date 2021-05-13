@@ -235,7 +235,7 @@ LEFT JOIN [Prices].[Парсинг].[п_СкладКонкурентаФилиа
 LEFT JOIN [Prices].[Парсинг].[п_НоменклКонкГрупповаяЕМИ] as p_nom on Source_table.[КодНоменклатуры] = p_nom.[КодНоменклатуры]
 WHERE p_nom.ГрупповаяНоменклатураЕМИ IN  ( SELECT DISTINCT 
 	 [Наименование]
-  FROM [PRD_ERP_PBI].[dbo].[ГрупповаяНоменклатура]
+  FROM [SmartPrice].[dbo].[ГрупповаяНоменклатура]
   WHERE [ГруппаФинансовогоУчета] = {{gfu}}
   )
 GROUP BY wh.[Подразделение_ЕМИ]
