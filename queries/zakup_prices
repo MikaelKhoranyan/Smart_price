@@ -4,8 +4,8 @@ SELECT
 	,Подразделение as Город
       ,[ГрупповаяНоменклатура] as Позиция
       ,CASE WHEN [ВидЦеныПоставщика] not Like 'Выкуп%' Then 'Цена_закупа' Else 'Цена_поручения' End as Вид_цены_закупка 
-      ,AVG(CASE WHEN ЦенаВключаетНДС =1 Then COALESCE([Цена] / NULLIF({{nds_rate}},0),0) Else [Цена] End) as Средняя_цена_вход
-      ,MIN(CASE WHEN ЦенаВключаетНДС =1 Then COALESCE([Цена] / NULLIF({{nds_rate}},0),0) Else [Цена] End) as Индикатив	  
+      ,AVG(CASE WHEN ЦенаВключаетНДС =0 Then COALESCE([Цена] * {{nds_rate}},0) Else [Цена] End) as Средняя_цена_вход
+      ,MIN(CASE WHEN ЦенаВключаетНДС =0 Then COALESCE([Цена] * {{nds_rate}},0) Else [Цена] End) as Индикатив	  
   FROM [SmartPrice].[dbo].[ЦеныПрайсыПоставщиков] as p
   Where DATEFROMPARTS(YEAR([Период]), MONTH([Период]),1 ) IN {{p_zakup.per_dates | inclause}} 
         and [ГруппаФинансовогоУчета] = {{gfu}} 
