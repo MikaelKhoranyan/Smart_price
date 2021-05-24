@@ -10,7 +10,13 @@ class PriceCalc(object):
         self.request_params = req_params
         self.price_factors = ['Счет', 'Прайс', 'Другое', 'Средняя_цена_парсинг', 'Цена_входа_тек_месяц', 'Цена_входа_след_месяц', 'Цена_поручения', 'Себестоимость_запаса', 'Прайс_ЕМИ']
 
-    def set_sql_response(self, sql_res):
+    def set_sql_response(self, sql_res:sqlalchemy.engine.result.RowProxy):
+        """
+        Фильтрует результаты sql выборки, записывает данные в 
+        сыром виде и в pandas dataframe.
+
+        sql_res: выборка из БД
+        """
         # фильтруем строки, по котрым нет хотя бы одной цены
         filered_sql_data = []
         for x in sql_res:
@@ -66,20 +72,25 @@ class PriceCalc(object):
         else:
             return float(price)
          
-    def calculate_row_price(self, row) -> dict:
+    def calculate_row_price(self, row: dict) -> dict:
         """
-        Пока предполагаем, что выполнение считаем по подразеделениям, а кз по позициям.
+        Считает расчетные цены для каждой позиции,выполнение (vip) считаем по подразеделениям,
+        а kz1 и kz2 по позициям.
+        
+        row: ответ из базы с параметрами для расчета
+        returns: словарь с расчетными параметрами
+
         """
         podr_perf = self.podr_perf.loc[row['Город']]
         vip = bool(podr_perf['vip1'])
-        # kz1 = podr_perf['kz1']
+        # kz1 = podr_perf['kz1'] если вдруг КЗ будем считать по подразделениям.
         # kz2 = podr_perf['kz2']
 
         kz1 = (row.get('Текущий_остаток_путь')/row.get('Прогноз_продаж')) >= 0.5 if all(
             [row.get('Текущий_остаток_путь'), row.get('Прогноз_продаж')]) else False
         kz2 = (row.get('Текущий_остаток_путь')/row.get('Прогноз_продаж')) >= 1 if all(
             [row.get('Текущий_остаток_путь'), row.get('Прогноз_продаж')]) else False
-        # vip = (row.get('Прогноз_продаж')/row.get('План_продаж')) > 0.98 if all(
+        # vip = (row.get('Прогноз_продаж')/row.get('План_продаж')) > 0.98 if all( если вдруг выполнение будем считать по позициям
         #     [row.get('Прогноз_продаж'), row.get('План_продаж')]) else False
 
         ustanovka = False
@@ -88,9 +99,16 @@ class PriceCalc(object):
             feature_name) is not None]
         min_factors = float(min(price_factors))
         max_factors = float(max(price_factors))
+   
+        # отдельно считаем мин и макс факторы без учета приплат (для наглядности)
+        price_factors_clean = [row.get(feature_name) for feature_name in self.price_factors if row.get(
+            feature_name) is not None]
+        min_factors_clean = float(min(price_factors_clean))
+        max_factors_clean = float(max(price_factors_clean))
 
         calc_res = dict(kz1=kz1, kz2=kz2, vip=vip,
-                        min_factors=min_factors, max_factors=max_factors)
+                        min_factors=min_factors, max_factors=max_factors,
+                        min_factors_clean=min_factors_clean, max_factors_clean=max_factors_clean)
 
         # определяем, в какой ситуации мы находимся, сперва рассматриваем граничные варианты
         if ustanovka:
@@ -136,6 +154,9 @@ class PriceCalc(object):
         return self.calc_res
 
     def calculate_prices(self):
+        """
+        Расчитывает цены и выходные параметры по массиву выборки умного прайса.
+        """
         self.calc_res = []
         for elem in self.sql_source_pvt_res:
             c_price = self.calculate_row_price(dict(elem))
