@@ -10,7 +10,7 @@ class PriceCalc(object):
         self.request_params = req_params
         self.price_factors = ['Счет', 'Прайс', 'Другое', 'Средняя_цена_парсинг', 'Цена_входа_тек_месяц', 'Цена_входа_след_месяц', 'Цена_поручения', 'Себестоимость_запаса', 'Прайс_ЕМИ']
 
-    def set_sql_response(self, sql_res:sqlalchemy.engine.result.RowProxy):
+    def set_sql_response(self, sql_res):
         """
         Фильтрует результаты sql выборки, записывает данные в 
         сыром виде и в pandas dataframe.
