@@ -46,8 +46,10 @@ FULL OUTER JOIN (
             )            as p3 on stock_sales_seb.Город = p3.Город and stock_sales_seb.Позиция = p3.Позиция
 
 FULL OUTER JOIN (
-    Select [Город], [Позиция], [Прайс_ЕМИ]
-    FROM emi_last_price
+Select emi_last_price.Подразделение as Город,emi_last_price.ГрупповаяНоменклатура as Позиция, AVG(Цена) as Прайс_ЕМИ
+from emi_last_price, (Select MAX(Период) as Посл_дата_цены, ГрупповаяНоменклатура FROM emi_last_price GROUP BY ГрупповаяНоменклатура) as l_date
+Where emi_last_price.[Период] = l_date.Посл_дата_цены and emi_last_price.ГрупповаяНоменклатура = l_date.ГрупповаяНоменклатура
+GROUP BY emi_last_price.ГрупповаяНоменклатура, emi_last_price.Подразделение
             )           as p4 on stock_sales_seb.Город = p4.Город and stock_sales_seb.Позиция = p4.Позиция
 
 

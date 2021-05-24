@@ -1,16 +1,9 @@
 , emi_last_price as (
-SELECT 
-       CAST([Период] as date) as Период
-      ,[Подразделение] as Город
-      ,[ГрупповаяНоменклатура] as Позиция
-      ,AVG([Цена]) as Прайс_ЕМИ
-  FROM [SmartPrice].[dbo].[ЦеныПрайсЛистЕМИ]  p, (Select ВидЦены, MAX([Период]) as Посл_период FROM [SmartPrice].[dbo].[ЦеныПрайсЛистЕМИ] Where ГруппаФинансовогоУчета = {{gfu}}  and Подразделение = {{podr}} GROUP BY [ВидЦены]) a
-  Where p.[ВидЦены] Like '%Прайс' 
-        and (a.Посл_период = p.Период and a.ВидЦены = p.ВидЦены)
-        and p.ГруппаФинансовогоУчета = {{gfu}}
-  GROUP BY  
-      CAST([Период] as date)
-      ,[Подразделение]
-      ,[ГрупповаяНоменклатура]
-
+ SELECT [Период], [Подразделение], [ГрупповаяНоменклатура], AVG([Цена]) as Цена
+  FROM [SmartPrice].[dbo].[ЦеныПрайсЛистЕМИ]
+  WHERE CAST ([Период] AS date) BETWEEN(Select last_report_date  FROM [SmartPrice].[dbo].[StagingTableUpdates] Where table_name = 'ЦеныПрайсЛистЕМИ') and DATEADD(DAY, -1, DATEADD(MONTH,1,(Select last_report_date  FROM [SmartPrice].[dbo].[StagingTableUpdates] Where table_name = 'ЦеныПрайсЛистЕМИ'))) 
+		and [ВидЦены] Like '%Прайс'
+		and Подразделение = {{podr}}
+		and  ГруппаФинансовогоУчета = {{gfu}}
+GROUP BY [Период], [Подразделение], [ГрупповаяНоменклатура]
 )
