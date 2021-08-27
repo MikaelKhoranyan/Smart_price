@@ -1,9 +1,0 @@
-, emi_last_price as (
- SELECT [Период], [Подразделение], [ГрупповаяНоменклатура], AVG([Цена]) as Цена
-  FROM [SmartPrice].[dbo].[ЦеныПрайсЛистЕМИ]
-  WHERE CAST ([Период] AS date) BETWEEN(Select last_report_date  FROM [SmartPrice].[dbo].[StagingTableUpdates] Where table_name = 'ЦеныПрайсЛистЕМИ') and DATEADD(DAY, -1, DATEADD(MONTH,1,(Select last_report_date  FROM [SmartPrice].[dbo].[StagingTableUpdates] Where table_name = 'ЦеныПрайсЛистЕМИ'))) 
-		and [ВидЦены] Like '%Прайс'
-		and Подразделение = {{podr}}
-		and  ГруппаФинансовогоУчета = {{gfu}}
-GROUP BY [Период], [Подразделение], [ГрупповаяНоменклатура]
-)
